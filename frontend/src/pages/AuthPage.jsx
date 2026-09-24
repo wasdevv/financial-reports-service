@@ -60,7 +60,7 @@ export default function AuthPage({ mode }) {
             ))}
           </ul>
         </div>
-        <p className="text-sm opacity-70">Spring Boot, PostgreSQL and React. Source on GitHub.</p>
+        <p className="text-sm opacity-80">Spring Boot, PostgreSQL and React. <a className="underline underline-offset-2 hover:opacity-100" href="https://github.com/wasdevv/financial-reports-service">Source on GitHub</a>.</p>
       </section>
 
       <section className="flex items-center justify-center px-4 py-12">

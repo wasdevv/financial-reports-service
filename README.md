@@ -69,6 +69,39 @@ Tudo vem do ambiente (`.env.example` lista as variáveis):
 | `DEMO_SEED` | não | `true` popula exemplos se não houver relatórios |
 | `JWT_EXPIRATION` | não | ISO-8601, padrão `PT8H` |
 
+## Deploy
+
+A Vercel não roda Java, então são dois hosts: **frontend na Vercel** e **API + Postgres num host de containers** (Railway, Render, Fly). Ainda não está publicado; a ordem abaixo é a que funciona, porque o frontend precisa da URL da API no build e a API precisa da URL do frontend no CORS.
+
+**1. API + Postgres (ex.: Railway)**
+
+1. Novo projeto → *Add PostgreSQL*.
+2. *New service* → este repo, **Root Directory `backend`** (o `Dockerfile` é detectado).
+3. Variáveis do serviço:
+   ```
+   DATABASE_URL=jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
+   DATABASE_USERNAME=${{Postgres.PGUSER}}
+   DATABASE_PASSWORD=${{Postgres.PGPASSWORD}}
+   JWT_SECRET=<openssl rand -base64 48>
+   ADMIN_EMAIL=<seu email>
+   ADMIN_PASSWORD=<senha forte, ≥ 12>
+   DEMO_SEED=true
+   CORS_ORIGINS=https://<projeto>.vercel.app
+   ```
+   A API lê `PORT` do ambiente. O Postgres do Railway expõe URL `postgresql://`, e o driver JDBC precisa do formato acima.
+4. *Generate domain* e confira `https://<api>/actuator/health` → `{"status":"UP"}`.
+
+**2. Frontend (Vercel)**
+
+```bash
+cd frontend
+npx vercel link                       # Root Directory = frontend, framework Vite
+npx vercel env add VITE_API_URL production   # https://<api>/api/v1
+npx vercel --prod
+```
+
+`frontend/vercel.json` reescreve tudo para `index.html`, então dar refresh em `/reports/12` não cai em 404. Se o domínio final da Vercel for diferente do previsto, atualize `CORS_ORIGINS` na API.
+
 ## Decisões
 
 - **Cadastro cria `ANALYST`**, não `USER`: numa demo pública, quem se cadastra precisa conseguir criar um relatório. `USER` (somente leitura) continua existindo e é atribuído por um admin.
