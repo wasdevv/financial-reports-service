@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: financial-reports-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/financial_reports}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+
+app:
+  jwt:
+    # Sem default: boot falha se faltar. Mínimo 32 bytes (HS256).
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION:PT8H}
+  cors-origins: ${CORS_ORIGINS:http://localhost:5173}
+  admin:
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+  demo-seed: ${DEMO_SEED:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+springdoc:
+  api-docs:
+    path: /api/v1/docs
+  swagger-ui:
+    path: /api/v1/swagger-ui.html

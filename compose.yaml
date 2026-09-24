@@ -1,0 +1,39 @@
+# Stack local completa: docker compose up --build --wait
+# Credenciais aqui são só de desenvolvimento; em produção tudo vem do ambiente.
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: financial_reports
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d financial_reports"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/financial_reports
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      JWT_SECRET: ${JWT_SECRET:-local-dev-only-secret-change-me-0123456789}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@local.dev}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-local-admin-password}
+      DEMO_SEED: "true"
+    ports: ["${API_PORT:-8080}:8080"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 5s
+      start_period: 30s
+      retries: 20
+
+volumes:
+  pgdata:

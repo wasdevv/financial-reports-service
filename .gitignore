@@ -1,0 +1,10 @@
+.env
+*.local
+backend/target/
+frontend/node_modules/
+frontend/dist/
+.vercel
+.idea/
+.vscode/
+*.iml
+.DS_Store
